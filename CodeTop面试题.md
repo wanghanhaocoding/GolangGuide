@@ -144,3 +144,67 @@ func Parition(nums []int,start,stop int) int {
 时间复杂度：O(n)
 
 空间复杂度：O(logn)，递归使用栈空间的空间代价的期望为 O(logn)。
+
+# [15. 三数之和](https://leetcode.cn/problems/3sum/)（双指针）
+
+```Go
+func threeSum(nums []int) (ans [][]int) {
+    slices.Sort(nums)
+    n := len(nums)
+    for i,x := range nums[:n - 2]{
+        if i > 0 && x == nums[i - 1]{ //跳过重复数字
+            continue
+        }
+        if x + nums[i + 1] + nums[i + 1] > 0 { //优化一
+            break
+        }
+        if x + nums[n - 2] + nums[n - 1] < 0{
+            continue
+        }
+        j,k := i + 1,n - 1
+        for j < k{
+            s := x + nums[j] + nums[k]
+            if s > 0{
+                k --
+            } else if s < 0{
+                j ++
+            }else{ //三数之和为0
+                ans = append(ans,[]int{x,nums[j],nums[k]})
+                for j ++;j < k && nums[j] == nums[j - 1]; j ++{}
+                for k --;k > j && nums[k] == nums[k + 1]; k --{}
+            }
+        }
+    }
+    return
+}
+```
+
+时间复杂度：O(n2)，其中 n 为 nums 的长度。排序 O(nlogn)。外层循环枚举第一个数，就变成 167. 两数之和 II - 输入有序数组 了，做法是 O(n) 双指针。所以总的时间复杂度为 O(n2)。
+
+空间复杂度：O(1)。返回值不计入，忽略排序的栈开销。
+
+# [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)（动态规划）
+
+```Go
+func maxSubArray(nums []int) int {
+    // 初始化最大子数组的和为数组的第一个元素
+    maxSum := nums[0]
+    for i := 1; i < len(nums); i++ {
+        // 如果将当前元素添加到前一个元素所在的子数组中能使该子数组的和增大，
+        // 则更新当前元素的值为该子数组的和，将当前元素扩展到前一个元素所在的子数组中
+        if nums[i]+nums[i-1] > nums[i] { 
+            nums[i] += nums[i-1]
+        }
+        // 如果当前元素所在的子数组（可能是经过上述扩展后的子数组）的和大于之前记录的最大子数组和，
+        // 则更新最大子数组和为当前元素所在子数组的和
+        if nums[i] > maxSum { 
+            maxSum = nums[i]
+        }
+    }
+    return maxSum
+}
+```
+
+时间复杂度：O(n)
+
+空间复杂度：O(n)
