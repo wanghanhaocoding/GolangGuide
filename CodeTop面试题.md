@@ -208,3 +208,158 @@ func maxSubArray(nums []int) int {
 时间复杂度：O(n)
 
 空间复杂度：O(n)
+
+# [912. 排序数组](https://leetcode.cn/problems/sort-an-array/)（分治，排序）
+
+```Go
+func sortArray(nums []int) []int {
+    // 定义一个内部函数 quick，用于实现快速排序
+    var quick func(nums []int, left, right int) []int
+
+    // 实现快速排序的递归函数
+    quick = func(nums []int, left, right int) []int {
+        // 当左边界小于右边界时，继续排序
+        for left < right {
+            // 随机选择主元（pivot），避免最坏情况的时间复杂度
+            pivotIndex := left + rand.Intn(right-left+1)
+            // 将主元交换到数组的最左边
+            nums[pivotIndex], nums[left] = nums[left], nums[pivotIndex]
+            pivot := nums[left] // 主元的值
+            i, j := left, right // 初始化两个指针 i 和 j
+
+            // 分区操作：将小于主元的元素放在左边，大于主元的元素放在右边
+            for i < j {
+                // 从右向左找到第一个小于主元的元素
+                for i < j && nums[j] >= pivot {
+                    j--
+                }
+                // 从左向右找到第一个大于主元的元素
+                for i < j && nums[i] <= pivot {
+                    i++
+                }
+                // 交换这两个元素
+                nums[i], nums[j] = nums[j], nums[i]
+            }
+
+            // 将主元放到正确的位置（i 和 j 相遇的位置）
+            nums[i], nums[left] = nums[left], nums[i]
+
+            // 尾递归优化：先处理较短的子数组，减少递归深度
+            if i-left < right-i {
+                // 如果左子数组较短，先排序左子数组
+                quick(nums, left, i-1)
+                // 调整 left，准备在下一轮循环中处理右子数组
+                left = i + 1
+            } else {
+                // 如果右子数组较短，先排序右子数组
+                quick(nums, i+1, right)
+                // 调整 right，准备在下一轮循环中处理左子数组
+                right = i - 1
+            }
+        }
+        return nums
+    }
+
+    // 调用快速排序函数，对整个数组进行排序
+    return quick(nums, 0, len(nums)-1)
+}
+```
+
+时间复杂度：O(nlogn)
+
+空间复杂度：O(logn)
+
+# [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)（迭代）
+
+```Go
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
+    // 创建一个哨兵节点，它的Next指针将指向合并后的链表的头节点
+    dummy := ListNode{}
+    
+    // cur 是一个指针，指向新链表的最后一个节点
+    cur := &dummy
+    
+    // 遍历两个链表，直到其中一个链表遍历完
+    for list1 != nil && list2 != nil {
+        // 比较两个链表当前节点的值
+        if list1.Val < list2.Val {
+            // 如果list1的当前节点值较小，将其连接到新链表的末尾
+            cur.Next = list1
+            // 移动list1的指针到下一个节点
+            list1 = list1.Next
+        } else {
+            // 如果list2的当前节点值较小或相等，将其连接到新链表的末尾
+            cur.Next = list2
+            // 移动list2的指针到下一个节点
+            list2 = list2.Next
+        }
+        // 移动cur指针到新链表的末尾
+        cur = cur.Next
+    }
+    
+    // 如果list1还有剩余节点，将其全部连接到新链表的末尾
+    if list1 != nil {
+        cur.Next = list1
+    } else {
+        // 如果list2还有剩余节点，将其全部连接到新链表的末尾
+        cur.Next = list2
+    }
+    
+    // 返回合并后的链表的头节点，即哨兵节点的Next指针
+    return dummy.Next
+}
+```
+
+时间复杂度：O(*n*+*m*)，其中 *n* 为 *list*1 的长度，*m* 为 *list*2 的长度。
+
+空间复杂度：O(1)。仅用到若干额外变量。
+
+# [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)（递归）
+
+```Go
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+
+func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
+    // 如果 list1 为空，直接返回 list2
+    // 因为如果 list1 为空，剩下的 list2 已经是有序的，不需要再合并
+    if list1 == nil {
+        return list2
+    }
+    
+    // 如果 list2 为空，直接返回 list1
+    // 因为如果 list2 为空，剩下的 list1 已经是有序的，不需要再合并
+    if list2 == nil {
+        return list1
+    }
+    
+    // 比较 list1 和 list2 的头节点的值
+    if list1.Val < list2.Val {
+        // 如果 list1 的头节点值较小，那么 list1 的头节点就是新链表的头节点
+        // 接下来递归地将 list1.Next 和 list2 合并，并将结果接在 list1 的后面
+        list1.Next = mergeTwoLists(list1.Next, list2)
+        return list1
+    } else {
+        // 如果 list2 的头节点值较小或相等，那么 list2 的头节点就是新链表的头节点
+        // 接下来递归地将 list1 和 list2.Next 合并，并将结果接在 list2 的后面
+        list2.Next = mergeTwoLists(list1, list2.Next)
+        return list2
+    }
+}
+```
+
+时间复杂度：O(n+m)，其中 n 为list1的长度，m 为list2的长度。
+
+空间复杂度：O(n+m)。递归需要 O(n+m) 的栈空间。
